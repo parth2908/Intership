@@ -5,21 +5,31 @@ const Register = () => {
   const [form, setForm] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    file: null,
   });
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const formData = new FormData();
+    formData.append('name', form.name);
+    formData.append('email', form.email);
+    formData.append('password', form.password);
+    if (form.file) {
+      formData.append('profilePicture', form.file);
+    }
+
     try {
       const res = await fetch('http://localhost:5000/api/users/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: formData,
       });
 
       const data = await res.json();
+
       if (res.ok) {
         alert('Registered successfully');
         navigate('/login');
@@ -27,7 +37,8 @@ const Register = () => {
         alert(data.message || 'Registration failed');
       }
     } catch (err) {
-      console.error(err);
+      console.error('Registration error:', err);
+      alert('Something went wrong. Please try again.');
     }
   };
 
@@ -35,7 +46,7 @@ const Register = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
       <div className="bg-white shadow-lg rounded-xl p-8 max-w-md w-full">
         <h2 className="text-3xl font-bold text-center text-blue-700 mb-6">Create Account</h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5" encType="multipart/form-data">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
             <input
@@ -72,6 +83,16 @@ const Register = () => {
               placeholder="••••••••"
             />
           </div>
+          <div>
+            <label htmlFor="profilePicture" className="block text-sm font-medium text-gray-700">Profile Picture</label>
+            <input
+              id="profilePicture"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setForm({ ...form, file: e.target.files[0] })}
+              className="mt-1 w-full text-sm"
+            />
+          </div>
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200"
@@ -79,7 +100,10 @@ const Register = () => {
             Register
           </button>
           <p className="text-sm text-center text-gray-600 mt-4">
-            Already have an account? <a href="/login" className="text-blue-600 hover:underline">Login</a>
+            Already have an account?{' '}
+            <a href="/login" className="text-blue-600 hover:underline">
+              Login
+            </a>
           </p>
         </form>
       </div>
@@ -88,3 +112,4 @@ const Register = () => {
 };
 
 export default Register;
+  
